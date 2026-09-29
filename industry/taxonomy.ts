@@ -53,10 +53,10 @@ export const TAG_SYNONYMS: Readonly<Record<string, string>> = {
   下游: "下游/需求", 需求: "下游/需求", 景气: "下游/需求",
   观点: "观点/分析", 分析: "观点/分析", 趋势: "观点/分析", 判断: "观点/分析",
   海外: "海外/国际", 国际: "海外/国际",
-  药玻: "药用玻璃", 药用玻瓶: "药用玻璃", 中性硼硅: "中硼硅", 高硼硅: "中硼硅",
+  药玻: "药用玻璃", 药用玻瓶: "药用玻璃", 中性硼硅: "中硼硅",
   白酒包装: "白酒", 玻璃瓶: "瓶罐", 瓶罐玻璃: "瓶罐", 化妆品瓶: "化妆品包装",
   环保: "环保/碳排", 碳排放: "环保/碳排", 双碳: "环保/碳排", 节能: "燃料/能源", 能源: "燃料/能源",
-  采购: "集采/医保", 带量采购: "集采/医保", 回收: "回收利用",
+  带量采购: "集采/医保", 回收: "回收利用",
   非行业: "行业外/其他", 无关: "行业外/其他",
 };
 
@@ -95,15 +95,15 @@ export const ENTITIES: Record<string, { name: string; displayTag: string | null;
  * 行业没有这个问题时可以留空数组。
  */
 export const IDENTITY_LEXICON: ReadonlyArray<{ id: string; name: string; patterns: RegExp[] }> = [
-  { id: "shandong-yaobo", name: "山东药玻", patterns: [/山东(?:省)?药用玻璃|山东药玻|600529/i] },
-  { id: "linuo-yaobao", name: "力诺药包", patterns: [/力诺(?:药包|特玻)|301188/] },
-  { id: "zhengchuan", name: "正川股份", patterns: [/正川|603976/] },
-  { id: "shandong-huapeng", name: "山东华鹏", patterns: [/山东华鹏|华鹏玻璃|603021/] },
-  { id: "kaisheng-tech", name: "凯盛科技", patterns: [/凯盛(?:科技|君恒)|600552/] },
-  { id: "deli", name: "德力股份", patterns: [/德力股份|安徽德力|002571/] },
+  { id: "shandong-yaobo", name: "山东药玻", patterns: [/山东(?:省)?药用玻璃|山东药玻|\b600529\b/i] },
+  { id: "linuo-yaobao", name: "力诺药包", patterns: [/力诺(?:药包|特玻)|\b301188\b/] },
+  { id: "zhengchuan", name: "正川股份", patterns: [/正川|\b603976\b/] },
+  { id: "shandong-huapeng", name: "山东华鹏", patterns: [/山东华鹏|华鹏玻璃|\b603021\b/] },
+  { id: "kaisheng-tech", name: "凯盛科技", patterns: [/凯盛(?:科技|君恒)|\b600552\b/] },
+  { id: "deli", name: "德力股份", patterns: [/德力股份|安徽德力|\b002571\b/] },
   { id: "sixing-glass", name: "四星玻璃", patterns: [/四星玻璃|沧州四星/] },
   { id: "huaxing-glass", name: "华兴玻璃", patterns: [/华兴玻璃|广东华兴/] },
-  { id: "oi-glass", name: "O-I", patterns: [/\bo-?i\s?glass\b|owens[-\s]illinois|欧文斯伊利诺伊/i] },
+  { id: "oi-glass", name: "O-I", patterns: [/\bo-?i(\s?glass)?\b|owens[-\s]illinois|欧文斯伊利诺伊/i] },
   { id: "verallia", name: "Verallia", patterns: [/verallia/i] },
   { id: "ardagh", name: "Ardagh", patterns: [/ardagh/i] },
   { id: "vidrala", name: "Vidrala", patterns: [/vidrala/i] },
