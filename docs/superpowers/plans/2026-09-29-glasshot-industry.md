@@ -19,6 +19,9 @@
 - 全部信源 `site_fulltext: false`、`syndicate_fulltext: false`
 - `features.ts` 两项都设 `false`（不删代码）
 - `apps/`、`packages/`、`database/` 零改动（`compose.ts:168` 的 `modelsReleased` 在 web 端为 0 时自动不显示，无需处理）
+  - **例外（2026-09-29 执行中发现）**：`packages/backend/src/publication/items.ts:98` 的 `category === "tip"` 是 AIHOT 旧分类体系的兼容垫片，任何没有 `tip` 分类的行业都无法通过 typecheck。允许且仅允许这一行改为 `(category as string) === "tip"`（行为不变，仅类型宽容）
+  - **例外二（同源）**：`apps/api/src/routes/v1.ts:65` `enumParam` 的兜底值 `"tip"` 同样无法通过 typecheck；该兜底是死代码路径，改为 `"opinion"`（新词表中的合法 key），行为不变
+  - taxonomy 代码块中 `技术/装备` 同义词键需加引号（`/` 非法标识符字符），以实际提交为准
 - 测试改例子不改规则：断言的是词表映射/归组逻辑，不硬编码真实公司数据
 - 每个信源 config 的键必须在 `packages/backend/src/sources/config-keys.ts` 的白名单内
 - Windows 本机跑命令一律带 `PYTHONUTF8=1`（如涉及 Python）；bash 下注意 MSYS 路径转换
