@@ -5,6 +5,7 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createServer, request as httpRequest } from "node:http";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { createRequestListener } from "@react-router/node";
 import { isApiOwned, resolveRedirect } from "@aihot/contracts/http-policy";
 
@@ -35,7 +36,9 @@ const TYPES: Record<string, string> = {
   ".map": "application/json",
 };
 
-const build = await import(path.resolve(import.meta.dirname, "build/server/index.js"));
+// On Windows an absolute path like C:\... is not a valid import specifier (it parses as a URL scheme),
+// so the built entry is imported through its file:// URL; on POSIX this is the same import.
+const build = await import(pathToFileURL(path.resolve(import.meta.dirname, "build/server/index.js")).href);
 const ssr = createRequestListener({ build, mode: "production" });
 
 class BadRequest extends Error {}
