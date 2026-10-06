@@ -7,6 +7,9 @@ import { stopBoss } from '@aihot/backend/jobs/queue';
 import { upsertMaterial } from '@aihot/backend/content/materials';
 import { publishArticle } from '@aihot/backend/publication/publish';
 
+// Node 在 Windows 上 kill('SIGTERM') 直接终止子进程、不会运行子进程的信号处理器，测试里的断言推进不了，
+// 只能挂到超时；整个文件在 Windows 上跳过（不派生子进程、不写数据库），CI 在 Linux 上跑同一套件不受影响。
+const SKIP = process.platform === 'win32' ? 'Node 在 Windows 不运行 SIGTERM 处理器' : false;
 const T = tag();
 const SOURCE = `test-translate-stop-${T}`;
 let active: { asked: ReturnType<typeof gate<void>>; hold: ReturnType<typeof gate<void>>; calls: number; misaligned: boolean };
@@ -44,12 +47,13 @@ function runTranslation() {
 }
 
 before(async () => {
+  if (SKIP) return;
   await sql`INSERT INTO sources (id,name,kind,tier,participation_mode,site_fulltext,next_fetch_at)
     VALUES (${SOURCE},'Translation shutdown','rss','T1','editorial',true,'2100-01-01')`;
 });
 after(async () => { await provider.close(); await stopBoss(); await closeDb(); });
 
-for (const misaligned of [false, true]) test(`SIGTERM finishes the sent ${misaligned ? 'misaligned' : 'normal'} batch and resumes from its receipt`, async () => {
+for (const misaligned of [false, true]) test(`SIGTERM finishes the sent ${misaligned ? 'misaligned' : 'normal'} batch and resumes from its receipt`, { skip: SKIP }, async () => {
   active = { asked: gate(), hold: gate(), calls: 0, misaligned };
   const first = misaligned ? `First paragraph ${T}.` : `First paragraph ${T}. ${'English text '.repeat(170)}`;
   const second = misaligned ? `Second paragraph ${T}.` : `Second paragraph ${T}. ${'More English '.repeat(170)}`;

@@ -9,6 +9,9 @@ import { sql, closeDb } from "@aihot/backend/db";
 import { getBoss, stopBoss } from "@aihot/backend/jobs/queue";
 import { upsertMaterial } from "@aihot/backend/content/materials";
 
+// Node 在 Windows 上 kill('SIGTERM') 直接终止子进程、不会运行子进程的信号处理器，测试里的断言推进不了，
+// 只能挂到超时；整个文件在 Windows 上跳过（不派生 worker、不写数据库），CI 在 Linux 上跑同一套件不受影响。
+const SKIP = process.platform === "win32" ? "Node 在 Windows 不运行 SIGTERM 处理器" : false;
 const T = tag();
 const SOURCE = `test-analyze-stop-${T}`;
 type Step = "prefilter" | "score" | "structure" | "understand";
@@ -85,6 +88,7 @@ async function until(check: () => Promise<boolean>, label: string) {
 }
 
 before(async () => {
+  if (SKIP) return;
   await sql`INSERT INTO sources (id,name,kind,tier,participation_mode,next_fetch_at)
     VALUES (${SOURCE},'Analysis shutdown','rss','T1','editorial','2100-01-01')`;
 });
@@ -94,7 +98,7 @@ after(async () => {
   await provider.close(); await stopBoss(); await closeDb();
 });
 
-test("SIGTERM during the final paid writing call still commits the complete analysis and publication", async () => {
+test("SIGTERM during the final paid writing call still commits the complete analysis and publication", { skip: SKIP }, async () => {
   active = { calls: [], scoreAsked: gate(), structureAsked: gate(), scoreAnswer: gate(), structureAnswer: gate(), writingAsked: gate(), writingAnswer: gate(), failScore: false };
   active.scoreAnswer.open(); active.structureAnswer.open();
   const queue = `test.analyze-stop-${T}-final`;
@@ -117,7 +121,7 @@ test("SIGTERM during the final paid writing call still commits the complete anal
   assert.equal((await sql`SELECT 1 FROM receipts WHERE subject=${`article:${articleId}@1`} AND status='completed'`).length, 5);
 });
 
-for (const failScore of [false, true]) test(`SIGTERM during ${failScore ? "failed" : "successful"} first score drains slower structure and leaves a retryable job`, async () => {
+for (const failScore of [false, true]) test(`SIGTERM during ${failScore ? "failed" : "successful"} first score drains slower structure and leaves a retryable job`, { skip: SKIP }, async () => {
   active = { calls: [], scoreAsked: gate(), structureAsked: gate(), scoreAnswer: gate(), structureAnswer: gate(), failScore };
   const queue = `test.analyze-stop-${T}-${failScore}`;
   const boss = await getBoss();
